@@ -54,11 +54,16 @@
       fetch(phpUrl)
         .then(response => {
           if (!response.ok) {
-            throw new Error('Error al obtener la URL del video HLS: ' + response.statusText);
+            throw new Error('No se pudo obtener la URL del video HLS (' + response.status + ' ' + response.statusText + ')');
           }
           return response.text();
         })
         .then(videoUrl => {
+          // Verificar si la URL del video es válida
+          if (!videoUrl) {
+            throw new Error('La URL del video HLS no es válida.');
+          }
+
           // Inicializar Video.js con la URL del video HLS obtenida
           var player = videojs('my-video', {
             fluid: true, // Hacer que el reproductor sea responsive
