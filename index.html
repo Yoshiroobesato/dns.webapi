@@ -49,19 +49,10 @@
         fluid: true, // Hacer que el reproductor sea responsive
         autoplay: true, // Autoreproducción del video
         controls: true, // Mostrar controles del reproductor
-        html5: {
-          hls: {
-            enableLowInitialPlaylist: true,
-            smoothQualityChange: true,
-            overrideNative: true
-          }
-        }
-      });
-
-      // Asignar la URL del video HLS al reproductor
-      player.src({
-        src: videoUrl,
-        type: 'application/x-mpegURL'
+        sources: [{
+          src: videoUrl,
+          type: 'application/x-mpegURL'
+        }]
       });
     });
   </script>
