@@ -18,7 +18,7 @@
     }
     
     .video-container {
-      width: 640px; /* Ancho del reproductor de video */
+      width: 800px; /* Ancho del contenedor del video */
     }
 
     .video-js {
@@ -30,7 +30,7 @@
 <body>
   <div class="video-container">
     <!-- Contenedor del reproductor de Video.js -->
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
+    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="800" height="450">
       Tu navegador no soporta la reproducción de video.
     </video>
   </div>
@@ -48,7 +48,14 @@
       var player = videojs('my-video', {
         fluid: true, // Hacer que el reproductor sea responsive
         autoplay: true, // Autoreproducción del video
-        controls: true // Mostrar controles del reproductor
+        controls: true, // Mostrar controles del reproductor
+        html5: {
+          hls: {
+            enableLowInitialPlaylist: true,
+            smoothQualityChange: true,
+            overrideNative: true
+          }
+        }
       });
 
       // Asignar la URL del video HLS al reproductor
