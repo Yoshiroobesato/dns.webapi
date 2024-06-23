@@ -7,7 +7,7 @@
   <!-- Estilos para Video.js -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
   <style>
-    /* Estilos adicionales para centrar el reproductor */
+    /* Estilos para centrar el reproductor */
     body, html {
       height: 100%;
       margin: 0;
@@ -45,12 +45,17 @@
       var videoUrl = '<?php echo $videoUrl; ?>';
 
       // Inicializar Video.js con la URL del video HLS
-      var player = videojs('my-video');
+      var player = videojs('my-video', {
+        fluid: true, // Hacer que el reproductor sea responsive
+        autoplay: true, // Autoreproducción del video
+        controls: true // Mostrar controles del reproductor
+      });
+
+      // Asignar la URL del video HLS al reproductor
       player.src({
         src: videoUrl,
         type: 'application/x-mpegURL'
       });
-      player.play(); // Reproducir automáticamente el video si se desea
     });
   </script>
 </body>
