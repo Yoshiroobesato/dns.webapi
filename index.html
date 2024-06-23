@@ -27,15 +27,11 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // URL de la API PHP que proporciona la URL del video HLS
-      var apiUrl = 'video_api.php';
+      var apiUrl = 'https://tu-servidor/video_api.php';
 
       // Función para obtener la URL del video HLS desde la API
-      function fetchVideoUrl() {
-        fetch(apiUrl, {
-          headers: {
-            'Authorization': 'Bearer yoshiro123'
-          }
-        })
+      function fetchVideoUrl(token) {
+        fetch(apiUrl + '?token=' + token)
         .then(response => {
           if (response.ok) {
             return response.json();
@@ -57,8 +53,11 @@
         });
       }
 
-      // Llamar a la función para obtener la URL del video
-      fetchVideoUrl();
+      // Generar un token de acceso dinámico antes de cargar el video
+      var accessToken = '<?php echo generateAccessToken(); ?>';
+
+      // Llamar a la función para obtener la URL del video con el token generado
+      fetchVideoUrl(accessToken);
     });
   </script>
 </body>
