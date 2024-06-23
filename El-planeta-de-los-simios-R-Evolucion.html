@@ -87,6 +87,27 @@
                 console.error('Error al reproducir el video.');
                 document.getElementById('error-message').style.display = 'block';
             });
+
+            // Cargar la posición guardada del video
+            var savedTime = localStorage.getItem('videoTime');
+            if (savedTime) {
+                player.currentTime(parseFloat(savedTime));
+            }
+
+            // Guardar la posición actual del video en localStorage cada 5 segundos
+            player.on('timeupdate', function() {
+                localStorage.setItem('videoTime', player.currentTime());
+            });
+
+            // Guardar la posición del video cuando se pausa
+            player.on('pause', function() {
+                localStorage.setItem('videoTime', player.currentTime());
+            });
+
+            // Guardar la posición del video cuando el usuario deja la página
+            window.addEventListener('beforeunload', function() {
+                localStorage.setItem('videoTime', player.currentTime());
+            });
         });
     </script>
 </body>
