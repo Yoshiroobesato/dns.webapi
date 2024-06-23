@@ -1,86 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reproductor de Video HLS</title>
-  <!-- Estilos para Video.js -->
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
-  <style>
-    /* Estilos para centrar el reproductor */
-    body, html {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #f0f0f0;
-    }
-    
-    .video-container {
-      width: 800px; /* Ancho del contenedor del video */
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor de Video HLS</title>
+    <!-- Estilos para Video.js -->
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
+    <style>
+        /* Estilos para hacer el video en pantalla completa */
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Para asegurar que el video ocupe toda la pantalla */
+        }
 
-    .video-js {
-      width: 100%;
-      height: auto;
-    }
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000; /* Fondo negro */
+        }
 
-    .error-message {
-      color: red;
-      font-size: 18px;
-    }
-  </style>
+        .video-js {
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-container {
+            position: absolute;
+            top: 20px; /* Ajustar la posición vertical del logo */
+            right: 20px; /* Ajustar la posición horizontal del logo */
+            z-index: 100; /* Asegurar que esté sobre el video */
+        }
+
+        .logo-container img {
+            width: 120px; /* Ajustar el tamaño del logo */
+        }
+
+        .error-message {
+            color: red;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-  <div class="video-container">
-    <!-- Contenedor del reproductor de Video.js -->
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="800" height="450">
-      Tu navegador no soporta la reproducción de video.
-    </video>
-    <p id="error-message" class="error-message" style="display: none;">No se pudo cargar el video.</p>
-  </div>
+    <div class="video-container">
+        <!-- Contenedor del reproductor de Video.js -->
+        <video id="my-video" class="video-js vjs-default-skin" controls preload="auto">
+            Tu navegador no soporta la reproducción de video.
+        </video>
+        <!-- Contenedor del logotipo -->
+        <div class="logo-container">
+            <img src="logo_gamepelis.png" alt="GamePelis">
+        </div>
+        <!-- Mensaje de error -->
+        <p id="error-message" class="error-message" style="display: none;">No se pudo cargar el video.</p>
+    </div>
 
-  <!-- Incluir Video.js y el plugin para HLS -->
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script src="https://unpkg.com/videojs-contrib-hls@5.14.1/dist/videojs-contrib-hls.min.js"></script>
+    <!-- Incluir Video.js y el plugin para HLS -->
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <script src="https://unpkg.com/videojs-contrib-hls@5.15.0/dist/videojs-contrib-hls.min.js"></script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // URL del archivo PHP que devuelve la URL del video HLS
-      var phpUrl = '/generate_video.php';
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL del video HLS
+            var videoUrl = 'https://z8dpsptc.sw-cdnstreamwish.com/hls2/01/03974/8zen94yqm5jy_,n,h,.urlset/master.m3u8?t=YUVOeVtZ1W9vvAxeciKW2GH9l_ASSC8juwRlJR-wX3U&s=1719126381&e=129600&f=20565819&srv=xhisossxof6ziadr&i=0.4&sp=500&p1=xhisossxof6ziadr&p2=xhisossxof6ziadr&asn=28024';
 
-      // Hacer una solicitud AJAX para obtener la URL del video HLS desde el archivo PHP remoto
-      fetch(phpUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('No se pudo obtener la URL del video HLS (' + response.status + ' ' + response.statusText + ')');
-          }
-          return response.text();
-        })
-        .then(videoUrl => {
-          // Verificar si la URL del video es válida
-          if (!videoUrl) {
-            throw new Error('La URL del video HLS no es válida.');
-          }
+            // Inicializar Video.js con la URL del video HLS
+            var player = videojs('my-video', {
+                fluid: true, // Hacer que el reproductor sea responsive
+                autoplay: true, // Autoreproducción del video
+                controls: true, // Mostrar controles del reproductor
+                sources: [{
+                    src: videoUrl,
+                    type: 'application/x-mpegURL'
+                }]
+            });
 
-          // Inicializar Video.js con la URL del video HLS obtenida
-          var player = videojs('my-video', {
-            fluid: true, // Hacer que el reproductor sea responsive
-            autoplay: true, // Autoreproducción del video
-            controls: true, // Mostrar controles del reproductor
-            sources: [{
-              src: videoUrl,
-              type: 'application/x-mpegURL'
-            }]
-          });
-        })
-        .catch(error => {
-          console.error('Error al cargar el video HLS:', error);
-          // Mostrar mensaje de error al usuario
-          document.getElementById('error-message').style.display = 'block';
+            // Manejar errores de carga del video
+            player.on('error', function() {
+                console.error('Error al reproducir el video.');
+                document.getElementById('error-message').style.display = 'block';
+            });
         });
-    });
-  </script>
+    </script>
 </body>
 </html>
