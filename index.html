@@ -26,38 +26,16 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // URL de la API PHP que proporciona la URL del video HLS
-      var apiUrl = '/video_api.php';
+      // URL del video HLS protegido
+      var videoUrl = 'https://z8dpsptc.sw-cdnstreamwish.com/hls2/01/03974/8zen94yqm5jy_,n,h,.urlset/master.m3u8?t=YUVOeVtZ1W9vvAxeciKW2GH9l_ASSC8juwRlJR-wX3U&s=1719126381&e=129600&f=20565819&srv=xhisossxof6ziadr&i=0.4&sp=500&p1=xhisossxof6ziadr&p2=xhisossxof6ziadr&asn=28024';
 
-      // Función para obtener la URL del video HLS desde la API
-      function fetchVideoUrl(token) {
-        fetch(apiUrl + '?token=' + token)
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Unauthorized');
-          }
-        })
-        .then(data => {
-          // Inicializar Video.js con la URL del video HLS
-          var player = videojs('my-video');
-          player.src({
-            src: data.url,
-            type: 'application/x-mpegURL'
-          });
-          player.play(); // Reproducir automáticamente el video si se desea
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
-      }
-
-      // Generar un token de acceso dinámico antes de cargar el video
-      var accessToken = '<?php echo generateAccessToken(); ?>';
-
-      // Llamar a la función para obtener la URL del video con el token generado
-      fetchVideoUrl(accessToken);
+      // Inicializar Video.js con la URL del video HLS
+      var player = videojs('my-video');
+      player.src({
+        src: videoUrl,
+        type: 'application/x-mpegURL'
+      });
+      player.play(); // Reproducir automáticamente el video si se desea
     });
   </script>
 </body>
