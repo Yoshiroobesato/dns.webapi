@@ -7,7 +7,20 @@
   <!-- Estilos para Video.js -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
   <style>
-    /* Estilos adicionales si es necesario */
+    /* Estilos adicionales para centrar el reproductor */
+    body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+    }
+    
+    .video-container {
+      width: 640px; /* Ancho del reproductor de video */
+    }
+
     .video-js {
       width: 100%;
       height: auto;
@@ -15,10 +28,12 @@
   </style>
 </head>
 <body>
-  <!-- Contenedor del reproductor de Video.js -->
-  <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
-    Tu navegador no soporta la reproducción de video.
-  </video>
+  <div class="video-container">
+    <!-- Contenedor del reproductor de Video.js -->
+    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
+      Tu navegador no soporta la reproducción de video.
+    </video>
+  </div>
 
   <!-- Incluir Video.js y el plugin para HLS -->
   <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
@@ -26,7 +41,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // URL del video HLS obtenida de PHP
+      // URL del video HLS (puedes modificar esta URL según donde esté alojado tu video)
       var videoUrl = '<?php echo $videoUrl; ?>';
 
       // Inicializar Video.js con la URL del video HLS
