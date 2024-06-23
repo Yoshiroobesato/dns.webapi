@@ -46,6 +46,26 @@
             color: red;
             font-size: 18px;
         }
+
+        .continue-watching-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none; /* Ocultar inicialmente */
+        }
+
+        .continue-watching-container button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +80,13 @@
         </div>
         <!-- Mensaje de error -->
         <p id="error-message" class="error-message" style="display: none;">No se pudo cargar el video.</p>
+
+        <!-- Contenedor de continuar viendo -->
+        <div class="continue-watching-container" id="continue-watching-container">
+            <p id="continue-watching-message"></p>
+            <button id="continue-watching-button">Continuar viendo</button>
+            <button id="restart-button">Reiniciar desde el principio</button>
+        </div>
     </div>
 
     <!-- Incluir Video.js y el plugin para HLS -->
@@ -74,7 +101,7 @@
             // Inicializar Video.js con la URL del video HLS
             var player = videojs('my-video', {
                 fluid: true, // Hacer que el reproductor sea responsive
-                autoplay: true, // Autoreproducción del video
+                autoplay: false, // No autoreproducir para mostrar opciones
                 controls: true, // Mostrar controles del reproductor
                 sources: [{
                     src: videoUrl,
@@ -85,9 +112,24 @@
             // Cargar la posición guardada del video
             var savedTime = localStorage.getItem('videoTime');
             if (savedTime) {
-                player.one('loadedmetadata', function() {
+                var continueWatchingContainer = document.getElementById('continue-watching-container');
+                var continueWatchingMessage = document.getElementById('continue-watching-message');
+                continueWatchingMessage.textContent = 'Última vez que viste hasta: ' + Math.floor(savedTime / 60) + 'm ' + Math.floor(savedTime % 60) + 's';
+                continueWatchingContainer.style.display = 'block';
+
+                document.getElementById('continue-watching-button').addEventListener('click', function() {
+                    continueWatchingContainer.style.display = 'none';
                     player.currentTime(parseFloat(savedTime));
+                    player.play();
                 });
+
+                document.getElementById('restart-button').addEventListener('click', function() {
+                    continueWatchingContainer.style.display = 'none';
+                    player.currentTime(0);
+                    player.play();
+                });
+            } else {
+                player.play();
             }
 
             // Guardar la posición actual del video en localStorage cada 5 segundos
@@ -95,9 +137,10 @@
                 localStorage.setItem('videoTime', player.currentTime());
             });
 
-            // Guardar la posición del video cuando se pausa
-            player.on('pause', function() {
-                localStorage.setItem('videoTime', player.currentTime());
+            // Manejar errores de carga del video
+            player.on('error', function() {
+                console.error('Error al reproducir el video.');
+                document.getElementById('error-message').style.display = 'block';
             });
 
             // Guardar la posición del video cuando el usuario deja la página
