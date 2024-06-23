@@ -25,6 +25,11 @@
       width: 100%;
       height: auto;
     }
+
+    .error-message {
+      color: red;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -33,6 +38,7 @@
     <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="800" height="450">
       Tu navegador no soporta la reproducción de video.
     </video>
+    <p id="error-message" class="error-message" style="display: none;">No se pudo cargar el video.</p>
   </div>
 
   <!-- Incluir Video.js y el plugin para HLS -->
@@ -41,19 +47,34 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // URL del video HLS (puedes modificar esta URL según donde esté alojado tu video)
-      var videoUrl = '<?php echo $videoUrl; ?>';
+      // URL del archivo PHP que devuelve la URL del video HLS
+      var phpUrl = 'http://lacancha.wuaze.com/pelisgame/generate_video.php';
 
-      // Inicializar Video.js con la URL del video HLS
-      var player = videojs('my-video', {
-        fluid: true, // Hacer que el reproductor sea responsive
-        autoplay: true, // Autoreproducción del video
-        controls: true, // Mostrar controles del reproductor
-        sources: [{
-          src: videoUrl,
-          type: 'application/x-mpegURL'
-        }]
-      });
+      // Hacer una solicitud AJAX para obtener la URL del video HLS desde el archivo PHP remoto
+      fetch(phpUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error al obtener la URL del video HLS: ' + response.statusText);
+          }
+          return response.text();
+        })
+        .then(videoUrl => {
+          // Inicializar Video.js con la URL del video HLS obtenida
+          var player = videojs('my-video', {
+            fluid: true, // Hacer que el reproductor sea responsive
+            autoplay: true, // Autoreproducción del video
+            controls: true, // Mostrar controles del reproductor
+            sources: [{
+              src: videoUrl,
+              type: 'application/x-mpegURL'
+            }]
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar el video HLS:', error);
+          // Mostrar mensaje de error al usuario
+          document.getElementById('error-message').style.display = 'block';
+        });
     });
   </script>
 </body>
