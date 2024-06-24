@@ -9,14 +9,13 @@
             height: 100%;
             margin: 0;
             overflow: hidden; /* Para asegurar que el video ocupe toda la pantalla */
+            font-family: Arial, sans-serif;
         }
 
         .video-container {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative; /* Cambiado a relativo para permitir superposiciones */
             width: 100%;
-            height: 100%;
+            height: 100vh; /* 100% del viewport height */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -39,6 +38,61 @@
         .logo-container img {
             width: 120px;
         }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 24px;
+            z-index: 200;
+            display: none; /* Inicialmente oculto */
+        }
+
+        .overlay p {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0; /* Inicialmente oculto */
+            transition: opacity 0.3s ease;
+        }
+
+        .controls:hover {
+            opacity: 1; /* Mostrar controles al pasar el ratón sobre ellos */
+        }
+
+        .controls button {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 20px;
+            margin: 0 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .controls button:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -49,11 +103,27 @@
         <div class="logo-container">
             <img src="https://cdn-webapi-files.vercel.app/Baner.png" alt="GamePelis">
         </div>
+        <!-- Capa de superposición para mensajes o advertencias -->
+        <div class="overlay" id="overlay">
+            <p>Por favor, no cierres esta página mientras se reproduce el video.</p>
+        </div>
+        <!-- Controles de reproducción -->
+        <div class="controls" id="controls">
+            <button id="playPauseButton" onclick="togglePlayPause()">&#9658;</button>
+            <button onclick="stopVideo()">⏹</button>
+        </div>
     </div>
 
     <script>
-        // Detectar cuando el usuario intenta cerrar la página o navegar fuera de ella
+        var iframe = document.getElementById('video-iframe');
+        var overlay = document.getElementById('overlay');
+        var controls = document.getElementById('controls');
+        var playPauseButton = document.getElementById('playPauseButton');
+
+        // Mostrar la capa de superposición y controles al intentar cerrar la página
         window.onbeforeunload = function(event) {
+            overlay.style.display = 'flex'; // Mostrar la capa de superposición
+            controls.style.opacity = 1; // Mostrar los controles
             var message = "¿Estás seguro de que deseas salir de esta página? Se perderá el progreso del video.";
             if (typeof event == "undefined") {
                 event = window.event;
@@ -63,6 +133,39 @@
             }
             return message;
         };
+
+        // Función para reproducir o pausar el video
+        function togglePlayPause() {
+            if (iframe.contentWindow && iframe.contentWindow.postMessage) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"' + 'togglePlayPause' + '","args":""}', '*');
+            }
+            if (playPauseButton.innerHTML === '&#9658;') {
+                playPauseButton.innerHTML = '&#9208;'; // Cambiar el ícono a pausa
+            } else {
+                playPauseButton.innerHTML = '&#9658;'; // Cambiar el ícono a reproducir
+            }
+        }
+
+        // Función para detener el video
+        function stopVideo() {
+            if (iframe.contentWindow && iframe.contentWindow.postMessage) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"' + 'stopVideo' + '","args":""}', '*');
+            }
+            playPauseButton.innerHTML = '&#9658;'; // Cambiar el ícono a reproducir
+        }
+
+        // Escuchar eventos del iframe para mostrar/ocultar controles según estado del video
+        window.addEventListener('message', function(event) {
+            var data = JSON.parse(event.data);
+            if (data.event === 'onStateChange') {
+                var playerState = data.info.playerState;
+                if (playerState === 1 || playerState === 3) { // Reproduciendo o bufferizando
+                    controls.style.opacity = 1; // Mostrar los controles
+                } else {
+                    controls.style.opacity = 0; // Ocultar los controles
+                }
+            }
+        }, false);
     </script>
 </body>
-</html>
+    </html>
