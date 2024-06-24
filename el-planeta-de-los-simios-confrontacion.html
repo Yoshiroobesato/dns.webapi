@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reproductor de Video</title>
     <style>
-        /* Estilos para hacer el video en pantalla completa */
         body, html {
             height: 100%;
             margin: 0;
@@ -32,24 +31,38 @@
 
         .logo-container {
             position: absolute;
-            top: 20px; /* Ajustar la posición vertical del logo */
-            right: 20px; /* Ajustar la posición horizontal del logo */
-            z-index: 100; /* Asegurar que esté sobre el video */
+            top: 20px;
+            right: 20px;
+            z-index: 100;
         }
 
         .logo-container img {
-            width: 120px; /* Ajustar el tamaño del logo */
+            width: 120px;
         }
     </style>
 </head>
 <body>
     <div class="video-container">
-        <!-- Contenedor del iframe -->
-        <iframe src="https://waaw.to/f/S2WyDEZfWLSp" allowfullscreen></iframe>
+        <!-- Iframe para reproducir el video -->
+        <iframe id="video-iframe" src="https://plustream.com/embedb2/71dIl.hJBe8bYQTuG3Vp_gyCIriQ1pvJQATBUF2DIn3uL9Od4Q94kh1LAbp4fboxx92WxiFszgqgNmzRDRdSyQ--" allowfullscreen></iframe>
         <!-- Contenedor del logotipo -->
         <div class="logo-container">
             <img src="https://cdn-webapi-files.vercel.app/Baner.png" alt="GamePelis">
         </div>
     </div>
+
+    <script>
+        // Detectar cuando el usuario intenta cerrar la página o navegar fuera de ella
+        window.onbeforeunload = function(event) {
+            var message = "¿Estás seguro de que deseas salir de esta página? Se perderá el progreso del video.";
+            if (typeof event == "undefined") {
+                event = window.event;
+            }
+            if (event) {
+                event.returnValue = message;
+            }
+            return message;
+        };
+    </script>
 </body>
 </html>
