@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video en Vivo</title>
+    <title>Transmisión en Vivo</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
             background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 20px;
         }
         .video-container {
-            width: 80%;
-            max-width: 960px;
+            position: relative;
             background-color: #222;
-            padding: 20px;
+            padding: 10px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
@@ -27,11 +26,49 @@
             height: auto;
             border-radius: 10px;
         }
+        .chat-container {
+            margin-top: 20px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .chat-header {
+            background-color: #444;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+        }
+        .chat-messages {
+            height: 200px;
+            overflow-y: scroll;
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+        .chat-input {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="video-container">
-        <video id="video" controls></video>
+    <div class="container">
+        <h1 class="text-center">Transmisión en Vivo</h1>
+        <p class="text-center">Disfruta de nuestra transmisión en vivo con chat en tiempo real.</p>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="video-container">
+                    <video id="video" controls></video>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chat-container">
+                    <div class="chat-header">Chat en Vivo</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input">
+                        <input type="text" class="form-control" id="chat-input" placeholder="Escribe un mensaje...">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -52,6 +89,19 @@
                 video.play();
             });
         }
+
+        // Simulación de chat (para propósitos de demostración)
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+                const message = document.createElement('div');
+                message.textContent = chatInput.value;
+                chatMessages.appendChild(message);
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
     </script>
 </body>
 </html>
