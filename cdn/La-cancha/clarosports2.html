@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor Personalizado</title>
+    <title>Reproductor de Video Personalizado</title>
 
-    <!-- Clappr y SwarmCloud -->
+    <!-- Cargar Clappr directamente desde la CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swarmcloud-hls@latest/dist/p2p-engine.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swarmcloud-hls@latest/dist/clappr-p2p-plugin.min.js"></script>
 
-    <!-- CSS Personalizado -->
+    <!-- Estilos personalizados -->
     <style>
         body, html {
             margin: 0;
@@ -20,9 +18,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #121212;
+            background: #0e0e0e;
             font-family: Arial, sans-serif;
-            color: #ffffff;
         }
 
         #player-container {
@@ -30,9 +27,9 @@
             width: 90%;
             max-width: 1200px;
             height: 70vh;
-            background-color: #1e1e1e;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            background: #222;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
@@ -41,15 +38,15 @@
             height: 100%;
         }
 
-        .loading {
+        .spinner {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 6px solid rgba(255, 255, 255, 0.3);
-            border-top: 6px solid #ffffff;
+            width: 60px;
+            height: 60px;
+            border: 8px solid rgba(255, 255, 255, 0.2);
+            border-top: 8px solid #fff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -64,38 +61,21 @@
 
 <div id="player-container">
     <div id="player"></div>
-    <div class="loading"></div>
+    <div class="spinner" id="spinner"></div>
 </div>
 
 <script>
-    var playbackURL = "https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596";
-    var p2pConfig = {
-        trackerZone: 'us',
-        sourceUrl: playbackURL
-    };
+    var player = new Clappr.Player({
+        source: "https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596",
+        parentId: "#player",
+        width: '100%',
+        height: '100%',
+        autoPlay: true,
+        mute: true,
+    });
 
-    P2PEngineHls.tryRegisterServiceWorker(p2pConfig).then(() => {
-        var player = new Clappr.Player({
-            source: playbackURL,
-            parentId: "#player",
-            width: '100%',
-            height: '100%',
-            autoPlay: true,
-            mute: true,
-            plugins: [SwarmCloudClapprPlugin],
-            playback: {
-                hlsjsConfig: {
-                    maxBufferSize: 0,
-                    maxBufferLength: 12,
-                    liveSyncDurationCount: 3,
-                    p2pConfig: p2pConfig
-                },
-            }
-        });
-
-        player.on(Clappr.Events.PLAYER_READY, function() {
-            document.querySelector('.loading').style.display = 'none';
-        });
+    player.on(Clappr.Events.PLAYER_READY, function() {
+        document.getElementById('spinner').style.display = 'none';
     });
 </script>
 
