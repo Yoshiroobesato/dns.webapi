@@ -3,81 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor de Video Personalizado</title>
-
-    <!-- Cargar Clappr directamente desde la CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-
-    <!-- Estilos personalizados -->
+    <title>Reproductor de Video en Vivo Avanzado</title>
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #0e0e0e;
             font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
-
-        #player-container {
-            position: relative;
-            width: 90%;
+        .container {
             max-width: 1200px;
-            height: 70vh;
-            background: #222;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
+            margin: 0 auto;
+            padding: 20px;
         }
-
-        #player {
+        .video-player {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        .video-player video {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            object-fit: cover;
         }
-
-        .spinner {
+        .controls {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            border: 8px solid rgba(255, 255, 255, 0.2);
-            border-top: 8px solid #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .controls button {
+            background-color: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .controls button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: #333333;
+            margin-top: 10px;
+            position: relative;
+        }
+        .progress {
+            width: 0%;
+            height: 100%;
+            background-color: #ff0000;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="video-player">
+            <video id="live-video" autoplay muted>
+                <source src="https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596" type="application/x-mpegURL">
+                Tu navegador no soporta el elemento de video.
+            </video>
+            <div class="controls">
+                <button id="play-pause">▶️ Play/Pause</button>
+                <button id="mute">🔇 Mute</button>
+                <button id="fullscreen">⛶ Fullscreen</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+        </div>
+    </div>
 
-<div id="player-container">
-    <div id="player"></div>
-    <div class="spinner" id="spinner"></div>
-</div>
+    <script>
+        const video = document.getElementById('live-video');
+        const playPauseButton = document.getElementById('play-pause');
+        const muteButton = document.getElementById('mute');
+        const fullscreenButton = document.getElementById('fullscreen');
+        const progressBar = document.querySelector('.progress');
 
-<script>
-    var player = new Clappr.Player({
-        source: "https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596",
-        parentId: "#player",
-        width: '100%',
-        height: '100%',
-        autoPlay: true,
-        mute: true,
-    });
+        playPauseButton.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
 
-    player.on(Clappr.Events.PLAYER_READY, function() {
-        document.getElementById('spinner').style.display = 'none';
-    });
-</script>
+        muteButton.addEventListener('click', () => {
+            video.muted = !video.muted;
+        });
 
+        fullscreenButton.addEventListener('click', () => {
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) {
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+                video.msRequestFullscreen();
+            }
+        });
+
+        video.addEventListener('timeupdate', () => {
+            const progress = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+        });
+    </script>
 </body>
 </html>
