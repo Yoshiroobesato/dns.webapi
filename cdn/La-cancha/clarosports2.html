@@ -3,84 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor de Video en Vivo Avanzado</title>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css">
+    <title>Reproductor de Video en Vivo Ultra Avanzado</title>
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-quality-levels/2.1.0/videojs-contrib-quality-levels.min.css" rel="stylesheet">
     <style>
-        :root {
-            --plyr-color-main: #ff4d4d;
-            --plyr-video-background: #1a1a1a;
-        }
         body {
             margin: 0;
             padding: 0;
-            background-color: #0a0a0a;
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            box-shadow: 0 0 30px rgba(255, 77, 77, 0.3);
-            border-radius: 8px;
+            height: 100vh;
             overflow: hidden;
         }
-        .plyr--video {
-            border-radius: 8px;
+        .video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
-        .plyr__control--overlaid {
-            background: rgba(255, 77, 77, 0.8);
+        .video-js {
+            width: 100% !important;
+            height: 100% !important;
         }
-        .plyr--full-ui input[type=range] {
+        .vjs-big-play-button {
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%);
+        }
+        .vjs-control-bar {
+            background-color: rgba(43, 51, 63, 0.9) !important;
+        }
+        .vjs-button > .vjs-icon-placeholder:before {
             color: #ff4d4d;
         }
-        .plyr__control.plyr__tab-focus,
-        .plyr__control:hover,
-        .plyr__control[aria-expanded=true] {
-            background: #ff4d4d;
-            color: #fff;
+        .vjs-play-progress {
+            background-color: #ff4d4d;
+        }
+        .vjs-volume-level {
+            background-color: #ff4d4d;
+        }
+        .vjs-menu-button-popup .vjs-menu {
+            background-color: rgba(43, 51, 63, 0.9);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <video id="player" playsinline controls data-poster="/path/to/poster.jpg">
+    <div class="video-container">
+        <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" autoplay muted>
             <source src="https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596" type="application/x-mpegURL">
+            <p class="vjs-no-js">
+                Para ver este video, por favor habilita JavaScript y considera actualizar a un navegador web que soporte video HTML5
+            </p>
         </video>
     </div>
 
-    <script src="https://cdn.plyr.io/3.7.3/plyr.polyfilled.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.15.0/videojs-contrib-hls.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-quality-levels/2.1.0/videojs-contrib-quality-levels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-http-source-selector/1.1.6/videojs-http-source-selector.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const source = 'https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596';
-            const video = document.querySelector('video');
+        var player = videojs('my-video', {
+            fluid: true,
+            responsive: true,
+            liveui: true,
+            html5: {
+                hls: {
+                    overrideNative: true,
+                    enableLowInitialPlaylist: true,
+                    smoothQualityChange: true,
+                    handleManifestRedirects: true
+                }
+            },
+            controlBar: {
+                children: [
+                    'playToggle',
+                    'volumePanel',
+                    'currentTimeDisplay',
+                    'timeDivider',
+                    'durationDisplay',
+                    'progressControl',
+                    'liveDisplay',
+                    'remainingTimeDisplay',
+                    'customControlSpacer',
+                    'playbackRateMenuButton',
+                    'chaptersButton',
+                    'descriptionsButton',
+                    'subsCapsButton',
+                    'audioTrackButton',
+                    'fullscreenToggle'
+                ]
+            }
+        });
 
-            // For more Plyr options: https://github.com/sampotts/plyr#options
-            const player = new Plyr(video, {
-                captions: { active: true, update: true, language: 'es' },
-                quality: { default: 576, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240] }
+        player.httpSourceSelector();
+
+        player.ready(function() {
+            this.hotkeys({
+                volumeStep: 0.1,
+                seekStep: 5,
+                enableModifiersForNumbers: false
             });
 
-            if (!Hls.isSupported()) {
-                video.src = source;
-            } else {
-                const hls = new Hls();
-                hls.loadSource(source);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                    const availableQualities = hls.levels.map((l) => l.height);
-                    player.config.quality.options = availableQualities;
-                    const defaultQuality = availableQualities[availableQualities.length - 1];
-                    player.config.quality.default = defaultQuality;
-                    player.toogleMenuItemVisibility('quality', availableQualities.length > 1);
-                });
-                window.hls = hls;
-            }
+            this.on('fullscreenchange', function() {
+                if (this.isFullscreen()) {
+                    this.requestPictureInPicture();
+                } else {
+                    document.exitPictureInPicture();
+                }
+            });
+        });
 
-            window.player = player;
+        player.on('error', function() {
+            console.log('Error de reproducción:', player.error());
         });
     </script>
 </body>
