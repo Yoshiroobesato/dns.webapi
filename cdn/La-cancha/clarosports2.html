@@ -4,123 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reproductor de Video en Vivo Avanzado</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css">
     <style>
+        :root {
+            --plyr-color-main: #ff4d4d;
+            --plyr-video-background: #1a1a1a;
+        }
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
+            background-color: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
         }
         .container {
+            width: 100%;
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 77, 77, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .video-player {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        .plyr--video {
+            border-radius: 8px;
         }
-        .video-player video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .plyr__control--overlaid {
+            background: rgba(255, 77, 77, 0.8);
         }
-        .controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0,0,0,0.7);
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .plyr--full-ui input[type=range] {
+            color: #ff4d4d;
         }
-        .controls button {
-            background-color: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-        .controls button:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        .progress-bar {
-            width: 100%;
-            height: 5px;
-            background-color: #333333;
-            margin-top: 10px;
-            position: relative;
-        }
-        .progress {
-            width: 0%;
-            height: 100%;
-            background-color: #ff0000;
-            position: absolute;
-            top: 0;
-            left: 0;
+        .plyr__control.plyr__tab-focus,
+        .plyr__control:hover,
+        .plyr__control[aria-expanded=true] {
+            background: #ff4d4d;
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="video-player">
-            <video id="live-video" autoplay muted>
-                <source src="https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596" type="application/x-mpegURL">
-                Tu navegador no soporta el elemento de video.
-            </video>
-            <div class="controls">
-                <button id="play-pause">▶️ Play/Pause</button>
-                <button id="mute">🔇 Mute</button>
-                <button id="fullscreen">⛶ Fullscreen</button>
-            </div>
-            <div class="progress-bar">
-                <div class="progress"></div>
-            </div>
-        </div>
+        <video id="player" playsinline controls data-poster="/path/to/poster.jpg">
+            <source src="https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596" type="application/x-mpegURL">
+        </video>
     </div>
 
+    <script src="https://cdn.plyr.io/3.7.3/plyr.polyfilled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
-        const video = document.getElementById('live-video');
-        const playPauseButton = document.getElementById('play-pause');
-        const muteButton = document.getElementById('mute');
-        const fullscreenButton = document.getElementById('fullscreen');
-        const progressBar = document.querySelector('.progress');
+        document.addEventListener('DOMContentLoaded', () => {
+            const source = 'https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596';
+            const video = document.querySelector('video');
 
-        playPauseButton.addEventListener('click', () => {
-            if (video.paused) {
-                video.play();
+            // For more Plyr options: https://github.com/sampotts/plyr#options
+            const player = new Plyr(video, {
+                captions: { active: true, update: true, language: 'es' },
+                quality: { default: 576, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240] }
+            });
+
+            if (!Hls.isSupported()) {
+                video.src = source;
             } else {
-                video.pause();
+                const hls = new Hls();
+                hls.loadSource(source);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                    const availableQualities = hls.levels.map((l) => l.height);
+                    player.config.quality.options = availableQualities;
+                    const defaultQuality = availableQualities[availableQualities.length - 1];
+                    player.config.quality.default = defaultQuality;
+                    player.toogleMenuItemVisibility('quality', availableQualities.length > 1);
+                });
+                window.hls = hls;
             }
-        });
 
-        muteButton.addEventListener('click', () => {
-            video.muted = !video.muted;
-        });
-
-        fullscreenButton.addEventListener('click', () => {
-            if (video.requestFullscreen) {
-                video.requestFullscreen();
-            } else if (video.mozRequestFullScreen) {
-                video.mozRequestFullScreen();
-            } else if (video.webkitRequestFullscreen) {
-                video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) {
-                video.msRequestFullscreen();
-            }
-        });
-
-        video.addEventListener('timeupdate', () => {
-            const progress = (video.currentTime / video.duration) * 100;
-            progressBar.style.width = `${progress}%`;
+            window.player = player;
         });
     </script>
 </body>
