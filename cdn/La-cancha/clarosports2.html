@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor Avanzado</title>
-    
+    <title>Reproductor Avanzado - Claro Sports</title>
+
     <!-- Clappr and SwarmCloud Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swarmcloud-hls@latest/dist/p2p-engine.min.js"></script>
@@ -16,13 +16,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body, html {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%);
+            background: linear-gradient(120deg, #1e3c72 0%, #2a5298 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -32,11 +32,11 @@
         #player-container {
             position: relative;
             width: 90%;
-            max-width: 1200px;
-            height: 60vh;
-            background-color: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 1400px;
+            height: 70vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
             overflow: hidden;
         }
 
@@ -46,6 +46,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 5;
         }
 
         .overlay {
@@ -54,7 +55,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 10;
             pointer-events: none;
         }
@@ -64,8 +65,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border: 8px solid rgba(255, 255, 255, 0.3);
             border-top: 8px solid #ffffff;
             border-radius: 50%;
@@ -81,9 +82,14 @@
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
             #player-container {
-                width: 100%;
+                width: 95%;
                 height: 50vh;
-                border-radius: 10px;
+                border-radius: 15px;
+            }
+
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
@@ -97,7 +103,7 @@
 </div>
 
 <script>
-    var playbackURL = "https://update8915.pricesaskeloadsc.com:443/global/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596";
+    var playbackURL = "https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596";
     var p2pConfig = {
         trackerZone: 'us',
         sourceUrl: playbackURL
