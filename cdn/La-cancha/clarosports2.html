@@ -3,77 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor de Video en Vivo Ultra Avanzado</title>
+    <title>Streaming en Vivo Ultra Avanzado</title>
     <link href="https://vjs.zencdn.net/7.20.3/video-js.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-quality-levels/2.1.0/videojs-contrib-quality-levels.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/@videojs/themes@1/dist/forest/index.css" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        .video-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        .video-js {
-            width: 100% !important;
-            height: 100% !important;
-        }
-        .vjs-big-play-button {
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%);
-        }
-        .vjs-control-bar {
-            background-color: rgba(43, 51, 63, 0.9) !important;
-        }
-        .vjs-button > .vjs-icon-placeholder:before {
-            color: #ff4d4d;
-        }
-        .vjs-play-progress {
-            background-color: #ff4d4d;
-        }
-        .vjs-volume-level {
-            background-color: #ff4d4d;
-        }
-        .vjs-menu-button-popup .vjs-menu {
-            background-color: rgba(43, 51, 63, 0.9);
-        }
+        body { margin: 0; background: #000; overflow: hidden; }
+        .video-container { width: 100vw; height: 100vh; }
+        .video-js { width: 100%; height: 100%; }
+        .vjs-live-display { background-color: #ff0000; }
+        .vjs-menu-button-popup .vjs-menu { background-color: rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
     <div class="video-container">
-        <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" autoplay muted>
+        <video-js id="my_video_1" class="vjs-theme-forest" controls preload="auto" autoplay muted>
             <source src="https://812.pricesaskeloadsc.com/clarosports2/index.m3u8?token=b00bfe6e26890290f92ea4913a8c246b61cb996a-7a-1723277596-1723241596" type="application/x-mpegURL">
-            <p class="vjs-no-js">
-                Para ver este video, por favor habilita JavaScript y considera actualizar a un navegador web que soporte video HTML5
-            </p>
-        </video>
+        </video-js>
     </div>
 
     <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.15.0/videojs-contrib-hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@3.8.0/dist/videojs-contrib-eme.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-quality-levels/2.1.0/videojs-contrib-quality-levels.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-http-source-selector/1.1.6/videojs-http-source-selector.min.js"></script>
     <script>
-        var player = videojs('my-video', {
+        var player = videojs('my_video_1', {
+            liveui: true,
             fluid: true,
             responsive: true,
-            liveui: true,
             html5: {
-                hls: {
+                vhs: {
                     overrideNative: true,
-                    enableLowInitialPlaylist: true,
-                    smoothQualityChange: true,
-                    handleManifestRedirects: true
-                }
+                    fastQualityChange: true,
+                    useBandwidthFromLocalStorage: true
+                },
+                nativeAudioTracks: false,
+                nativeVideoTracks: false
             },
             controlBar: {
                 children: [
@@ -84,19 +48,16 @@
                     'durationDisplay',
                     'progressControl',
                     'liveDisplay',
-                    'remainingTimeDisplay',
                     'customControlSpacer',
                     'playbackRateMenuButton',
-                    'chaptersButton',
-                    'descriptionsButton',
-                    'subsCapsButton',
-                    'audioTrackButton',
+                    'qualitySelector',
                     'fullscreenToggle'
                 ]
             }
         });
 
         player.httpSourceSelector();
+        player.qualityLevels();
 
         player.ready(function() {
             this.hotkeys({
@@ -105,18 +66,46 @@
                 enableModifiersForNumbers: false
             });
 
+            this.on('loadedmetadata', function() {
+                var qualityLevels = this.qualityLevels();
+                var currentQuality = qualityLevels[qualityLevels.selectedIndex];
+                console.log('Calidad actual:', currentQuality ? currentQuality.height + 'p' : 'Auto');
+            });
+
+            this.on('error', function(e) {
+                console.error('Error de reproducción:', this.error());
+                this.load();
+                this.play();
+            });
+
+            this.tech_.on('retryplaylist', function() {
+                console.log('Reintentando cargar la lista de reproducción...');
+            });
+
             this.on('fullscreenchange', function() {
-                if (this.isFullscreen()) {
-                    this.requestPictureInPicture();
-                } else {
+                if (document.pictureInPictureElement) {
                     document.exitPictureInPicture();
                 }
             });
         });
 
-        player.on('error', function() {
-            console.log('Error de reproducción:', player.error());
-        });
+        // Mostrar estadísticas de streaming
+        setInterval(function() {
+            var statsEl = document.getElementById('stream-stats');
+            if (!statsEl) {
+                statsEl = document.createElement('div');
+                statsEl.id = 'stream-stats';
+                statsEl.style.position = 'absolute';
+                statsEl.style.top = '10px';
+                statsEl.style.left = '10px';
+                statsEl.style.color = 'white';
+                statsEl.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                statsEl.style.padding = '5px';
+                document.querySelector('.video-container').appendChild(statsEl);
+            }
+            var stats = player.tech_.vhs.stats;
+            statsEl.textContent = 'Bandwidth: ' + Math.round(stats.bandwidth / 1000) + ' kbps | Buffer: ' + Math.round(stats.buffered) + 's';
+        }, 1000);
     </script>
 </body>
 </html>
