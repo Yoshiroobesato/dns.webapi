@@ -3,109 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streaming en Vivo Ultra Avanzado</title>
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/@videojs/themes@1/dist/forest/index.css" rel="stylesheet">
+    <title>Streaming en Vivo Ultra Avanzado con Shaka Player</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; }
-        .video-container { width: 100vw; height: 100vh; }
-        .video-js { width: 100%; height: 100%; }
-        .vjs-live-display { background-color: #ff0000; }
-        .vjs-menu-button-popup .vjs-menu { background-color: rgba(0,0,0,0.8); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        #video-container { width: 100%; height: 100%; }
+        video { width: 100%; height: 100%; }
+        #error-overlay { 
+            display: none; 
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); 
+            color: white; 
+            justify-content: center; 
+            align-items: center; 
+            font-family: Arial, sans-serif; 
+        }
+        #stats { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 5px; font-family: monospace; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
 </head>
 <body>
-    <div class="video-container">
-        <video-js id="my_video_1" class="vjs-theme-forest" controls preload="auto" autoplay muted>
-            <source src="https://global.pricesaskeloadsc.com:443/global/clarosports2/index.m3u8?token=efb8c36ced64c8ed6a58e946fb4415920299a1ff-f3-1723286845-1723250845" type="application/x-mpegURL">
-        </video-js>
+    <div id="video-container">
+        <video id="video" controls autoplay></video>
     </div>
+    <div id="error-overlay">
+        <div>Error en la reproducción. Intentando reconectar...</div>
+    </div>
+    <div id="stats"></div>
 
-    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@3.8.0/dist/videojs-contrib-eme.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-quality-levels/2.1.0/videojs-contrib-quality-levels.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-http-source-selector/1.1.6/videojs-http-source-selector.min.js"></script>
     <script>
-        var player = videojs('my_video_1', {
-            liveui: true,
-            fluid: true,
-            responsive: true,
-            html5: {
-                vhs: {
-                    overrideNative: true,
-                    fastQualityChange: true,
-                    useBandwidthFromLocalStorage: true
-                },
-                nativeAudioTracks: false,
-                nativeVideoTracks: false
-            },
-            controlBar: {
-                children: [
-                    'playToggle',
-                    'volumePanel',
-                    'currentTimeDisplay',
-                    'timeDivider',
-                    'durationDisplay',
-                    'progressControl',
-                    'liveDisplay',
-                    'customControlSpacer',
-                    'playbackRateMenuButton',
-                    'qualitySelector',
-                    'fullscreenToggle'
-                ]
+        const manifestUri = 'https://update8915.pricesaskeloadsc.com:443/global/clarosports2/index.m3u8?token=c639897a3fe493212f3e66816683cc94a32b0d57-41-1723287124-1723251124';
+        const video = document.getElementById('video');
+        const errorOverlay = document.getElementById('error-overlay');
+        const statsDiv = document.getElementById('stats');
+
+        function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                initPlayer();
+            } else {
+                console.error('Browser not supported!');
             }
-        });
+        }
 
-        player.httpSourceSelector();
-        player.qualityLevels();
+        async function initPlayer() {
+            const player = new shaka.Player(video);
 
-        player.ready(function() {
-            this.hotkeys({
-                volumeStep: 0.1,
-                seekStep: 5,
-                enableModifiersForNumbers: false
-            });
-
-            this.on('loadedmetadata', function() {
-                var qualityLevels = this.qualityLevels();
-                var currentQuality = qualityLevels[qualityLevels.selectedIndex];
-                console.log('Calidad actual:', currentQuality ? currentQuality.height + 'p' : 'Auto');
-            });
-
-            this.on('error', function(e) {
-                console.error('Error de reproducción:', this.error());
-                this.load();
-                this.play();
-            });
-
-            this.tech_.on('retryplaylist', function() {
-                console.log('Reintentando cargar la lista de reproducción...');
-            });
-
-            this.on('fullscreenchange', function() {
-                if (document.pictureInPictureElement) {
-                    document.exitPictureInPicture();
+            player.configure({
+                streaming: {
+                    bufferingGoal: 30,
+                    rebufferingGoal: 15,
+                    bufferBehind: 30,
+                    lowLatencyMode: true,
+                    jumpLargeGaps: true,
+                    retryParameters: {
+                        maxAttempts: 10,
+                        baseDelay: 1000,
+                        backoffFactor: 2,
+                        fuzzFactor: 0.5,
+                        timeout: 30000,
+                    }
+                },
+                abr: {
+                    enabled: true,
+                    defaultBandwidthEstimate: 1000000,
+                    switchInterval: 8,
+                    bandwidthUpgradeTarget: 0.85,
+                    bandwidthDowngradeTarget: 0.95,
                 }
             });
-        });
 
-        // Mostrar estadísticas de streaming
-        setInterval(function() {
-            var statsEl = document.getElementById('stream-stats');
-            if (!statsEl) {
-                statsEl = document.createElement('div');
-                statsEl.id = 'stream-stats';
-                statsEl.style.position = 'absolute';
-                statsEl.style.top = '10px';
-                statsEl.style.left = '10px';
-                statsEl.style.color = 'white';
-                statsEl.style.backgroundColor = 'rgba(0,0,0,0.5)';
-                statsEl.style.padding = '5px';
-                document.querySelector('.video-container').appendChild(statsEl);
+            player.addEventListener('error', onPlayerErrorEvent);
+
+            try {
+                await player.load(manifestUri);
+                console.log('The video has now been loaded!');
+                updateStats(player);
+                setInterval(() => updateStats(player), 1000);
+            } catch (error) {
+                onPlayerError(error);
             }
-            var stats = player.tech_.vhs.stats;
-            statsEl.textContent = 'Bandwidth: ' + Math.round(stats.bandwidth / 1000) + ' kbps | Buffer: ' + Math.round(stats.buffered) + 's';
-        }, 1000);
+
+            video.addEventListener('play', () => {
+                errorOverlay.style.display = 'none';
+            });
+        }
+
+        function onPlayerErrorEvent(event) {
+            onPlayerError(event.detail);
+        }
+
+        function onPlayerError(error) {
+            console.error('Error code', error.code, 'object', error);
+            errorOverlay.style.display = 'flex';
+            setTimeout(() => initPlayer(), 5000);
+        }
+
+        function updateStats(player) {
+            const stats = player.getStats();
+            statsDiv.textContent = `
+                Bandwidth: ${Math.round(stats.estimatedBandwidth / 1000)} kbps
+                Buffer: ${Math.round(stats.bufferingTime * 10) / 10}s
+                Dropped Frames: ${stats.droppedFrames}
+                Current Resolution: ${stats.width}x${stats.height}
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
